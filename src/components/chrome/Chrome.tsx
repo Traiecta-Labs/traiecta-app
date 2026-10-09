@@ -13,7 +13,7 @@
 import Link from "next/link";
 import type { ReactElement, ReactNode } from "react";
 
-import { HyperionMark } from "../brand/HyperionMark";
+import { HyperionMark } from "../brand";
 import { StellarWalletButton, EvmWalletButton } from "../wallet";
 import styles from "./Chrome.module.css";
 
