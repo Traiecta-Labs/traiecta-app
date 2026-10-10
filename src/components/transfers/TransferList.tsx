@@ -3,29 +3,13 @@
 import Link from "next/link";
 import { type ReactElement } from "react";
 import { ExternalLink } from "lucide-react";
-import { getRouteName, type FormattedTransfer, type TransferLifecycleStage } from "../../api";
+import { getRouteName, type FormattedTransfer } from "../../api";
 import { getExplorerUrl, shortenAddress, shortenTxHash } from "../../lib/format";
+import { getStageClass } from "../../lib/transfer-stages";
 import styles from "./TransferList.module.css";
 
 interface TransferListProps {
   readonly transfers: readonly FormattedTransfer[];
-}
-
-function getStageClass(stage: TransferLifecycleStage): string {
-  switch (stage) {
-    case "delivered":
-    case "settled":
-      return styles.stageDelivered ?? "";
-    case "initiated":
-    case "attesting":
-    case "attested":
-    case "delivering":
-      return styles.stageInFlight ?? "";
-    case "parked":
-      return styles.stageParked ?? "";
-    case "failed":
-      return styles.stageFailed ?? "";
-  }
 }
 
 export function TransferList({ transfers }: TransferListProps): ReactElement {
@@ -44,7 +28,9 @@ export function TransferList({ transfers }: TransferListProps): ReactElement {
           <div className={styles.cardTop}>
             <div className={styles.routeAndStage}>
               <span className={styles.routeBadge}>{getRouteName(t.route)}</span>
-              <span className={`${styles.stageBadge} ${getStageClass(t.stage)}`}>{t.stage}</span>
+              <span className={`${styles.stageBadge} ${getStageClass(t.stage, styles)}`}>
+                {t.stage}
+              </span>
             </div>
             <time className={styles.timestamp} dateTime={t.origin.observedAt}>
               {new Date(t.origin.observedAt).toLocaleString()}

@@ -4,99 +4,14 @@ import Link from "next/link";
 import { use, useEffect, useState, type ReactElement } from "react";
 import { ExternalLink } from "lucide-react";
 import { Column, Footer, Header, Main, Shell } from "../../../components/chrome";
-import { StageLamps, type Stage } from "../../../components/transfer/StageLamps";
-import {
-  fetchTransferByTx,
-  getRouteName,
-  type FormattedTransfer,
-  type TransferLifecycleStage,
-} from "../../../api";
+import { StageLamps } from "../../../components/transfer/StageLamps";
+import { fetchTransferByTx, getRouteName, type FormattedTransfer } from "../../../api";
 import { getExplorerUrl } from "../../../lib/format";
+import { buildStages, getStageClass } from "../../../lib/transfer-stages";
 import styles from "./page.module.css";
 
 interface PageProps {
   readonly params: Promise<{ readonly txHash: string }>;
-}
-
-function getStageClass(stage: TransferLifecycleStage): string {
-  switch (stage) {
-    case "delivered":
-    case "settled":
-      return styles.stageDelivered ?? "";
-    case "initiated":
-    case "attesting":
-    case "attested":
-    case "delivering":
-      return styles.stageInFlight ?? "";
-    case "parked":
-      return styles.stageParked ?? "";
-    case "failed":
-      return styles.stageFailed ?? "";
-  }
-}
-
-function buildStages(t: FormattedTransfer): Stage[] {
-  let stageNames: [string, string, string];
-  let stageDetails: [string, string, string];
-
-  if (t.route === 0) {
-    stageNames = ["burn", "attest", "mint"];
-    stageDetails = ["origin SAC", "circle iris", "destination cctp"];
-  } else if (t.route === 2) {
-    stageNames = ["call", "relay", "execute"];
-    stageDetails = ["origin gateway", "axelar validators", "destination execute"];
-  } else if (t.route === 3) {
-    stageNames = ["deposit", "relay", "release"];
-    stageDetails = ["v_usd pool", "allbridge messenger", "destination pool"];
-  } else {
-    stageNames = ["dispatch", "relay", "receive"];
-    stageDetails = ["origin token manager", "axelar network", "destination execute"];
-  }
-
-  const [s0, s1, s2] = stageNames;
-  const [d0, d1, d2] = stageDetails;
-
-  if (t.stage === "delivered" || t.stage === "settled") {
-    return [
-      { id: s0, name: s0, detail: d0, state: "completed" },
-      { id: s1, name: s1, detail: d1, state: "completed" },
-      { id: s2, name: s2, detail: d2, state: "completed" },
-    ];
-  }
-  if (t.stage === "delivering" || t.stage === "parked") {
-    return [
-      { id: s0, name: s0, detail: d0, state: "completed" },
-      { id: s1, name: s1, detail: d1, state: "completed" },
-      { id: s2, name: s2, detail: d2, state: "active" },
-    ];
-  }
-  if (t.stage === "attested") {
-    return [
-      { id: s0, name: s0, detail: d0, state: "completed" },
-      { id: s1, name: s1, detail: d1, state: "completed" },
-      { id: s2, name: s2, detail: d2, state: "idle" },
-    ];
-  }
-  if (t.stage === "attesting") {
-    return [
-      { id: s0, name: s0, detail: d0, state: "completed" },
-      { id: s1, name: s1, detail: d1, state: "active" },
-      { id: s2, name: s2, detail: d2, state: "idle" },
-    ];
-  }
-  if (t.stage === "failed") {
-    return [
-      { id: s0, name: s0, detail: d0, state: "completed" },
-      { id: s1, name: s1, detail: d1, state: "failed" },
-      { id: s2, name: s2, detail: d2, state: "idle" },
-    ];
-  }
-  // initiated
-  return [
-    { id: s0, name: s0, detail: d0, state: "active" },
-    { id: s1, name: s1, detail: d1, state: "idle" },
-    { id: s2, name: s2, detail: d2, state: "idle" },
-  ];
 }
 
 export default function TransferDetailPage({ params }: PageProps): ReactElement {
@@ -145,7 +60,7 @@ export default function TransferDetailPage({ params }: PageProps): ReactElement 
               <div className={styles.headerBlock}>
                 <div className={styles.titleRow}>
                   <h1 className="title">Transfer inspector</h1>
-                  <span className={`${styles.stageBadge} ${getStageClass(transfer.stage)}`}>
+                  <span className={`${styles.stageBadge} ${getStageClass(transfer.stage, styles)}`}>
                     {transfer.stage}
                   </span>
                 </div>
@@ -164,7 +79,7 @@ export default function TransferDetailPage({ params }: PageProps): ReactElement 
               </div>
 
               <section className={styles.lifecycleSection} aria-label="Progress lamps">
-                <StageLamps stages={buildStages(transfer)} />
+                <StageLamps stages={buildStages(transfer.route, transfer.stage)} />
               </section>
 
               {transfer.claim && (
