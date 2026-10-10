@@ -2,7 +2,7 @@
 """Render the favicon set from the mark component, rather than from a second drawing of it.
 
 There is no SVG rasteriser on this machine and no appetite for adding one, so this script reads
-``src/components/brand/HyperionMark.tsx``, pulls the geometry straight out of the JSX, and draws it
+``src/components/brand/TraiectaMark.tsx``, pulls the geometry straight out of the JSX, and draws it
 with Pillow. The component stays the single source of truth: change the mark and the tab icon
 follows, and if the geometry ever stops being extractable the script fails instead of quietly
 shipping yesterday's icon.
@@ -27,7 +27,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parent.parent
-COMPONENT = ROOT / "src" / "components" / "brand" / "HyperionMark.tsx"
+COMPONENT = ROOT / "src" / "components" / "brand" / "TraiectaMark.tsx"
 TOKENS = ROOT / "src" / "app" / "tokens.ts"
 PUBLIC = ROOT / "public"
 
