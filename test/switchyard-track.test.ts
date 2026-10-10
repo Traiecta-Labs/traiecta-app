@@ -3,8 +3,6 @@ import { RouteKind } from "@hyperion/protocol";
 import { planRouteExecution } from "../src/planner/quotes";
 import { Switchyard } from "../src/components/switchyard";
 import { Track } from "../src/components/switchyard/Track";
-import { Switchyard as YardSwitchyard } from "../src/components/yard";
-import { Track as YardTrack } from "../src/components/yard/Track";
 
 describe("Switchyard Track Inspection & Tooltips", () => {
   it("attaches detailed inspection breakdown to each planned track", () => {
@@ -72,10 +70,8 @@ describe("Switchyard Track Inspection & Tooltips", () => {
     expect(allbridgeTrack?.inspection?.disqualificationCode).toBe("COST_POOL_SLIPPAGE");
   });
 
-  it("exports Track and Switchyard components across switchyard and yard paths", () => {
+  it("exports Track and Switchyard from the switchyard module", () => {
     expect(Track).toBeDefined();
     expect(Switchyard).toBeDefined();
-    expect(YardTrack).toBeDefined();
-    expect(YardSwitchyard).toBeDefined();
   });
 });
