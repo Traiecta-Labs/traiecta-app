@@ -108,14 +108,28 @@ export function planRouteExecution(
   };
 
   const parsedAmount = parseAmount(input.amount, STELLAR_DECIMALS);
-  const effectiveAmount = parsedAmount ?? 1_000_0000000n; // Default 1000 USDC for layout preview
+
+  // A quote only exists for an amount the parser accepts. When it is null (empty, zero, negative,
+  // over-precision or non-numeric) there is nothing to price, so no rail is drawn, no winner is
+  // chosen and the breakdown stays null, which leaves the yard reporting blocked instead of
+  // showing a fully priced fallback the user never typed.
+  if (parsedAmount === null) {
+    return {
+      tracks: [],
+      best: null,
+      breakdown: null,
+      originLeg: { name: "Stellar", detail: `0.0000000 ${input.asset}` },
+      destinationLeg: { name: "Arc", detail: `0.000000 ${input.asset}` },
+    };
+  }
+
   const rawAddr = input.destinationAddress.trim();
   const parsed = rawAddr ? tryParseStellarAddress(rawAddr) : null;
   const destStrkey = parsed?.ok ? rawAddr : FALLBACK_DESTINATION;
 
   const quotes = planQuotes(
     {
-      amount: effectiveAmount,
+      amount: parsedAmount,
       strkey: destStrkey,
       destinationDecimals: EVM_DECIMALS,
     },
@@ -197,7 +211,7 @@ export function planRouteExecution(
     };
   });
 
-  const formattedGross = formatAmount(effectiveAmount, STELLAR_DECIMALS);
+  const formattedGross = formatAmount(parsedAmount, STELLAR_DECIMALS);
   const formattedNet = best ? formatAmount(best.netAmount, STELLAR_DECIMALS) : formattedGross;
   const formattedDest = best ? formatAmount(best.destinationAmount, EVM_DECIMALS) : formattedGross;
   const formattedFee = best ? formatAmount(best.fee, STELLAR_DECIMALS) : "0.0000000";

@@ -70,6 +70,22 @@ describe("Route Planner Arithmetic & Parsing", () => {
     expect(cctpTrack?.verdict?.kind).toBe("refusal");
   });
 
+  it("returns no quote for amounts the parser rejects", () => {
+    for (const amount of ["abc", "0", "100.12345678"]) {
+      const plan = planRouteExecution({
+        amount,
+        originChain: "stellar-testnet",
+        destinationChain: "arc-testnet",
+        destinationAddress: "",
+        asset: "USDC",
+        slippageBps: 50,
+      });
+
+      expect(plan.best).toBeNull();
+      expect(plan.breakdown).toBeNull();
+    }
+  });
+
   it("calculates minimum received amounts across slippage presets and custom inputs", () => {
     const netAmount = 1_000_000000n; // 1000 USDC with 6 decimals
 
