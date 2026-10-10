@@ -47,7 +47,7 @@ interface TransferFlowProps {
 
 export function TransferFlow({ planner }: TransferFlowProps): ReactElement {
   const { isConnected, connect, address } = useStellarWallet();
-  const { breakdown, selectedRoute, input } = planner;
+  const { breakdown, selectedRoute, input, parsedAmount } = planner;
 
   const [activeTransfer, setActiveTransfer] = useState<boolean>(false);
   const [stages, setStages] = useState<Stage[]>(() => getStagesForRoute(selectedRoute));
@@ -58,6 +58,11 @@ export function TransferFlow({ planner }: TransferFlowProps): ReactElement {
   const isHighSlippage = input.slippageBps > 500;
 
   const handleInitiate = async () => {
+    // An amount the planner rejects (negative, over-precision, zero, non-numeric) has no
+    // stroop value, so there is nothing correct to dispatch. Refuse rather than approximate.
+    if (parsedAmount === null) {
+      return;
+    }
     setActiveTransfer(true);
     const initial = getStagesForRoute(selectedRoute);
     // Move first stage to active
@@ -69,7 +74,7 @@ export function TransferFlow({ planner }: TransferFlowProps): ReactElement {
 
     const res = await submitBridgeOut(address ?? "", {
       token: STELLAR_USDC_SAC_ID,
-      amount: BigInt(Math.floor((Number(input.amount) || 0) * 10_000_000)),
+      amount: parsedAmount,
       route: selectedRoute ?? RouteKind.AxelarIts,
       destinationChain: input.destinationChain,
       destinationAddress: input.destinationAddress,

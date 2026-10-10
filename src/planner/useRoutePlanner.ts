@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import type { RouteKind } from "@hyperion/protocol";
 import type { Leg, Track, YardState } from "../components/switchyard";
-import { planRouteExecution } from "./quotes";
+import { planRouteExecution, parseAmount } from "./quotes";
 import type { QuoteInput, RouteBreakdown } from "./types";
 
 const INITIAL_INPUT: QuoteInput = {
@@ -23,6 +23,8 @@ export interface RoutePlannerHook {
   tracks: readonly Track[];
   selectedRoute: RouteKind | null;
   breakdown: RouteBreakdown | null;
+  /** The user's amount parsed to stroops, or null when parseAmount rejects it. */
+  parsedAmount: bigint | null;
   originLeg: Leg;
   destinationLeg: Leg;
   state: YardState;
@@ -48,6 +50,8 @@ export function useRoutePlanner(): RoutePlannerHook {
     return planRouteExecution(input);
   }, [input]);
 
+  const parsedAmount = useMemo(() => parseAmount(input.amount), [input.amount]);
+
   const resolutionId = `${input.amount}:${input.destinationAddress}`;
   const state: YardState = best !== null ? "resolved" : !input.amount ? "idle" : "blocked";
 
@@ -59,6 +63,7 @@ export function useRoutePlanner(): RoutePlannerHook {
     tracks,
     selectedRoute: best?.route ?? null,
     breakdown,
+    parsedAmount,
     originLeg,
     destinationLeg,
     state,
