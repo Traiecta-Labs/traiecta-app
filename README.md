@@ -138,11 +138,11 @@ sit on. Reduced motion is honoured by collapsing durations to zero rather than b
 
 ## Prerequisites
 
-| Tool | Version / Notes | Install |
-| --- | --- | --- |
-| **Node.js** | 20 or newer, with npm | https://nodejs.org |
-| **Traiecta contracts repo** | checked out as a sibling, for the shared `@traiecta/protocol` SDK | [traiecta-contracts](https://github.com/Traiecta-Labs/traiecta-contracts) |
-| **Browser wallet** | Freighter or another Stellar Wallets Kit wallet for the Stellar leg; an EVM wallet for the EVM leg | https://freighter.app |
+| Tool                        | Version / Notes                                                                                    | Install                                                                   |
+| --------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| **Node.js**                 | 20 or newer, with npm                                                                              | https://nodejs.org                                                        |
+| **Traiecta contracts repo** | checked out as a sibling, for the shared `@hyperion/protocol` SDK                                  | [traiecta-contracts](https://github.com/Traiecta-Labs/traiecta-contracts) |
+| **Browser wallet**          | Freighter or another Stellar Wallets Kit wallet for the Stellar leg; an EVM wallet for the EVM leg | https://freighter.app                                                     |
 
 Verify your setup:
 
@@ -162,7 +162,7 @@ npm run check      # format, house rules, contrast, lint, typecheck, production 
 ```
 
 One trap worth knowing, and it is written at length in `next.config.ts`. Turbopack will not follow
-a symlink out of its root. `@traiecta/protocol` is a `file:` dependency on a sibling repository, so
+a symlink out of its root. `@hyperion/protocol` is a `file:` dependency on a sibling repository, so
 npm installs it as a symlink resolving outside this directory, and pinning `turbopack.root` to this
 package makes the shared SDK unresolvable with a bare "module not found" that says nothing about
 symlinks. The root is the directory holding both repositories, which is what a workspace root
@@ -172,13 +172,13 @@ means.
 
 Copy `.env.example` to `.env.local` and fill it in. The app reads only `NEXT_PUBLIC_*` values, all of which end up in the browser bundle, so nothing here may be a secret.
 
-| Variable | Required | Purpose |
-| --- | --- | --- |
-| `NEXT_PUBLIC_TRAIECTA_NETWORK` | yes | `testnet` or `mainnet`; which side of the fence to talk to |
-| `NEXT_PUBLIC_TRAIECTA_INDEXER_URL` | no | URL of the status indexer (the app does not call it yet) |
-| `NEXT_PUBLIC_STELLAR_RPC_URL` | no | Override the default Stellar RPC endpoint from `@traiecta/protocol` |
-| `NEXT_PUBLIC_EVM_RPC_URL` | no | Override the default EVM RPC endpoint from `@traiecta/protocol` |
-| `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` | no | WalletConnect project id for the EVM leg (public by design) |
+| Variable                               | Required | Purpose                                                             |
+| -------------------------------------- | -------- | ------------------------------------------------------------------- |
+| `NEXT_PUBLIC_HYPERION_NETWORK`         | yes      | `testnet` or `mainnet`; which side of the fence to talk to          |
+| `NEXT_PUBLIC_HYPERION_INDEXER_URL`     | no       | URL of the status indexer (the app does not call it yet)            |
+| `NEXT_PUBLIC_STELLAR_RPC_URL`          | no       | Override the default Stellar RPC endpoint from `@hyperion/protocol` |
+| `NEXT_PUBLIC_EVM_RPC_URL`              | no       | Override the default EVM RPC endpoint from `@hyperion/protocol`     |
+| `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` | no       | WalletConnect project id for the EVM leg (public by design)         |
 
 ## Implemented capabilities
 
@@ -188,7 +188,7 @@ Copy `.env.example` to `.env.local` and fill it in. The app reads only `NEXT_PUB
 4. **Transfer flow and stage lamps**: Unnumbered, named stages tracking the cross-chain journey from origin burn/dispatch to destination execution.
 5. **Parked claim settlement UI**: Surfaces uninitialized destination claims for permissionless recovery.
 6. **Transfer registry and inspector**: Searchable history at `/transfers` and single-transfer inspector at `/transfers/[txHash]`.
-7. **Automated verification pipeline**: 24 tests across arithmetic, geometry, API client, and accessibility audits.
+7. **Automated verification pipeline**: 41 tests across seven files covering route planner arithmetic and parsing, switchyard geometry and track inspection, block explorer links and address formatting, the transfer-tracking API client, accessibility and design tokens, and wallet session persistence.
 8. **CI/CD and governance**: GitHub Actions CI workflow, PR template, CODEOWNERS, SECURITY.md, and dependabot.
 
 ### Live deployment
