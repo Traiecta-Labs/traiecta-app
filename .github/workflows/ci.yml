@@ -1,46 +1,65 @@
 name: ci
-
 on:
-  pull_request:
+  pull_request: null
   push:
-    branches: [main]
-  merge_group:
-  workflow_dispatch:
-
+    branches:
+    - main
+  merge_group: null
+  workflow_dispatch: null
 permissions:
   contents: read
-
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref
+    }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
-
 jobs:
   frontend:
     name: check, test, build
     runs-on: ubuntu-latest
     timeout-minutes: 15
-
     steps:
-      - name: Check out frontend repository
-        uses: actions/checkout@v4
-        with:
-          path: frontend
+    - name: Check out frontend repository
+      uses: actions/checkout@v4
+      with:
+        path: frontend
+    - name: Set up Node.js 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: npm
+        cache-dependency-path: frontend/package-lock.json
+    - name: Install frontend dependencies
+      working-directory: frontend
+      run: npm ci
+    - name: Run verification pipeline
+      working-directory: frontend
+      run: npm run check
+    - name: Check out frontend repository
+      uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      with:
+        path: frontend
+    - name: Check out contracts repository for protocol dependency
+      uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      with:
+        repository: StellarHyperion/stellarhyperion-contracts
+        path: contracts
+    - name: Set up Node.js 20
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+      with:
+        node-version: 20
+        cache: npm
+        cache-dependency-path: 'contracts/packages/protocol/package-lock.json
 
-      - name: Set up Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          frontend/package-lock.json
 
-      - name: Install frontend dependencies
-        working-directory: frontend
-        run: npm ci
+          '
+    - name: Build protocol package
+      working-directory: contracts/packages/protocol
+      run: 'npm ci
 
-      - name: Run verification pipeline
-        working-directory: frontend
-        run: npm run check
+        npm run build
 
+        '
   gate:
     name: gate
     runs-on: ubuntu-latest
@@ -48,16 +67,12 @@ jobs:
     permissions:
       contents: read
     needs:
-      - frontend
+    - frontend
     if: always()
-
     steps:
-      - name: Verify all required checks passed
-        env:
-          FRONTEND_RESULT: ${{ needs.frontend.result }}
-        run: |
-          if [ "$FRONTEND_RESULT" != "success" ]; then
-            echo "Frontend CI failed with status: $FRONTEND_RESULT"
-            exit 1
-          fi
-          echo "All frontend CI checks passed."
+    - name: Verify all required checks passed
+      env:
+        FRONTEND_RESULT: ${{ needs.frontend.result }}
+      run: "if [ \"$FRONTEND_RESULT\" != \"success\" ]; then\n  echo \"Frontend CI\
+        \ failed with status: $FRONTEND_RESULT\"\n  exit 1\nfi\necho \"All frontend\
+        \ CI checks passed.\"\n"
